@@ -1,0 +1,120 @@
+const User = require('../models/userModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const multer = require('multer');
+const sharp = require('sharp');
+
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'public/img/users');
+//   },
+//   filename: (req, file, cb) => {
+//     //user-id-timeStamp.jpeg
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user._id}-${Date.now()}.${ext}`);
+//   },
+// });
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an Image!', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+//req.file
+exports.uploadUserPhoto = upload.single('photo');
+
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user._id}-${Date.now()}.jpeg`;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+});
+
+const filterObj = (body, ...rest) => {
+  let outputObj = {};
+
+  [...rest].forEach((field) => {
+    if (body[field]) outputObj[field] = body[field];
+  });
+
+  return outputObj;
+};
+
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const users = await User.find();
+
+  res.status(200).json({
+    status: 'sucess',
+    requestAt: req.requestTime,
+    result: users.length,
+    data: {
+      users,
+    },
+  });
+});
+
+exports.updateMe = catchAsync(async (req, res, next) => {
+  if (req.body.password || req.body.passwordConfirm)
+    return next(new AppError('You cant update password in this route!', 400));
+
+  const filteredBody = filterObj(req.body, 'name', 'email');
+  if (req.file) filteredBody.photo = req.file.filename;
+
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({
+    status: 'sucess',
+    data: {
+      user: updatedUser,
+    },
+  });
+});
+
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false });
+
+  res.status(204).json({
+    status: 'sucess',
+    data: null,
+  });
+});
+exports.getUser = (req, res) => {
+  res.status(500).json({
+    status: 'sucess',
+    message: 'Not yet defined',
+  });
+};
+
+exports.createUser = (req, res) => {
+  res.status(500).json({
+    status: 'sucess',
+    message: 'Not yet defined',
+  });
+};
+
+exports.updateUser = (req, res) => {
+  res.status(500).json({
+    status: 'sucess',
+    message: 'Not yet defined',
+  });
+};
