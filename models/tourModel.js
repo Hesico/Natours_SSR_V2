@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
-const User = require('./userModel');
+// const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -104,7 +104,13 @@ const tourSchema = new mongoose.Schema(
         day: Number,
       },
     ],
-    guides: Array,
+    // guides: Array,
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -116,6 +122,12 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
+
 // DOCUMENT MIDDLEWARE: runs before .save() and .create() - this = document
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
@@ -123,12 +135,12 @@ tourSchema.pre('save', function (next) {
 });
 
 // Adicionando referência embutida de objetos já existentes (guides => user)
-tourSchema.pre('save', async function (next) {
-  const guidesPromisses = this.guides.map(async (id) => await User.findById(id));
-  this.guides = await Promise.all(guidesPromisses);
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromisses = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(guidesPromisses);
 
-  next();
-});
+//   next();
+// });
 
 // after .save() and .create()
 // tourSchema.post('save', function(doc,next) {
@@ -142,6 +154,14 @@ tourSchema.pre(/^find/g, function (next) {
   // Pode salvar informações na query já que é um objeto regular
   this.start = Date.now();
   this.find({ secretTour: { $ne: true } });
+  next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
   next();
 });
 
