@@ -1,8 +1,19 @@
 const User = require('../models/userModel');
+const factory = require('./handlerFactory');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const multer = require('multer');
 const sharp = require('sharp');
+
+exports.deleteUser = factory.deleteOne(User);
+exports.updateUser = factory.updateOne(User);
+exports.getUser = factory.getOne(User);
+exports.getAllUsers = factory.getAll(User);
+
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user._id;
+  next();
+};
 
 // const multerStorage = multer.diskStorage({
 //   destination: (req, file, cb) => {
@@ -57,19 +68,6 @@ const filterObj = (body, ...rest) => {
   return outputObj;
 };
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-
-  res.status(200).json({
-    status: 'sucess',
-    requestAt: req.requestTime,
-    result: users.length,
-    data: {
-      users,
-    },
-  });
-});
-
 exports.updateMe = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm)
     return next(new AppError('You cant update password in this route!', 400));
@@ -98,23 +96,10 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'sucess',
-    message: 'Not yet defined',
-  });
-};
 
 exports.createUser = (req, res) => {
   res.status(500).json({
-    status: 'sucess',
-    message: 'Not yet defined',
-  });
-};
-
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'sucess',
-    message: 'Not yet defined',
+    status: 'error',
+    message: 'Please use /signup instead!',
   });
 };

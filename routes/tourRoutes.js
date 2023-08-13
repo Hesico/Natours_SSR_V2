@@ -22,11 +22,17 @@ router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
 
 router.route('/tour-stats').get(getTourStats);
 
-router.route('/monthly-plan/:year').get(getMonthlyPlan);
+router
+  .route('/monthly-plan/:year')
+  .get(
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide', 'guide'),
+    getMonthlyPlan
+  );
 
 router
   .route('/')
-  .get(authController.protect, getAllTours)
+  .get(getAllTours)
   .post(authController.protect, authController.restrictTo('admin', 'lead-guide'), createTour);
 
 router
