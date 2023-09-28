@@ -128,6 +128,10 @@ tourSchema.virtual('reviews', {
   localField: '_id',
 });
 
+// tourSchema.index({ price: 1 });
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 // DOCUMENT MIDDLEWARE: runs before .save() and .create() - this = document
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
