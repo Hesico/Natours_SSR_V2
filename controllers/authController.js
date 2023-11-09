@@ -63,8 +63,11 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req?.cookies?.jwt) {
+    token = req.cookies.jwt;
+  }
 
   if (!token) return next(new AppError('Your are not logged in!', 401));
 
@@ -161,4 +164,30 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   createAndSendToken(user, 200, res);
+});
+
+
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+
+  if (req?.cookies?.jwt && req.cookies.jwt !== 'loggedout') {
+    const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+    const _user = await User.findById(decoded.id);
+
+    if (!_user) return next();
+    if (_user.changedPasswordAfter(decoded.iat)) return next();
+
+    res.locals.user = _user;
+    return next();
+  }
+
+  next();
+});
+
+exports.logout = catchAsync(async (req, res, next) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({ status: 'success' })
 });

@@ -3,7 +3,7 @@ import '@babel/polyfill';
 import { displayMap } from './mapbox';
 import { login, logout } from './login';
 import { updateSettings } from './updateSettings';
-import { bookTour } from './stripe';
+// import { bookTour } from './stripe';
 import { showAlert } from './alerts';
 
 // DOM ELEMENTS
@@ -64,7 +64,7 @@ if (bookBtn)
   bookBtn.addEventListener('click', e => {
     e.target.textContent = 'Processing...';
     const { tourId } = e.target.dataset;
-    bookTour(tourId);
+    // bookTour(tourId);
   });
 
 const alertMessage = document.querySelector('body').dataset.alert;

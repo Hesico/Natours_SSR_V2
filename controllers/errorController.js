@@ -22,27 +22,41 @@ const handleJsonWebTokenError = () => new AppError('Invalid token!', 401);
 
 const handleTokenExpiredError = () => new AppError('Token Expired!', 401);
 
-const sendErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    message: err.message,
-    stack: err.stack,
-  });
-};
-
-const sendErrorProd = (err, res) => {
-  if (err.isOperational) {
+const sendErrorDev = (err, res, req) => {
+  if (req.originalUrl.startsWith('/api')) {
     res.status(err.statusCode).json({
       status: err.status,
+      error: err,
       message: err.message,
+      stack: err.stack,
     });
   } else {
-    console.error('ERROR: ', err);
+    res.status(err.statusCode).render('error', {
+      title: 'Something went wrong!',
+      msg: err.message,
+    });
+  }
+};
 
-    res.status(500).json({
-      status: 'error',
-      message: 'Something went very wrong',
+const sendErrorProd = (err, res, req) => {
+  if (req.originalUrl.startsWith('/api')) {
+    if (err.isOperational) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    } else {
+      console.error('ERROR: ', err);
+
+      return res.status(500).json({
+        status: 'error',
+        message: 'Something went very wrong',
+      });
+    }
+  } else {
+    return res.status(err.isOperational ? err.statusCode : 500).render('error', {
+      title: 'Something went wrong!',
+      msg: err.isOperational ? err.message : 'Please try again later! Error: ',
     });
   }
 };
@@ -52,7 +66,7 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, res);
+    sendErrorDev(err, res, req);
   } else if (process.env.NODE_ENV === 'production') {
     const handleErrorFunctions = {
       name: {
@@ -69,6 +83,6 @@ module.exports = (err, req, res, next) => {
     const erroFunc = handleErrorFunctions.name[err.name] || handleErrorFunctions.code[err.code];
     const error = erroFunc ? erroFunc(err) : err;
 
-    sendErrorProd(error, res);
+    sendErrorProd(error, res, req);
   }
 };
