@@ -12130,7 +12130,7 @@ var updateSettings = exports.updateSettings = /*#__PURE__*/function () {
           });
         case 4:
           res = _context.sent;
-          if (res.data.status === 'success') {
+          if (res.data.status === 'sucess') {
             (0, _alerts.showAlert)('success', "".concat(type.toUpperCase(), " updated successfully!"));
           }
           _context.next = 11;
@@ -12320,19 +12320,19 @@ if (userDataForm) userDataForm.addEventListener('submit', function (e) {
 });
 if (userPasswordForm) userPasswordForm.addEventListener('submit', /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(e) {
-    var passwordCurrent, password, passwordConfirm;
+    var password, newPassword, passwordConfirm;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
           e.preventDefault();
           document.querySelector('.btn--save-password').textContent = 'Updating...';
-          passwordCurrent = document.getElementById('password-current').value;
-          password = document.getElementById('password').value;
+          password = document.getElementById('password-current').value;
+          newPassword = document.getElementById('password').value;
           passwordConfirm = document.getElementById('password-confirm').value;
           _context.next = 7;
           return (0, _updateSettings.updateSettings)({
-            passwordCurrent: passwordCurrent,
             password: password,
+            newPassword: newPassword,
             passwordConfirm: passwordConfirm
           }, 'password');
         case 7:
@@ -12383,7 +12383,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52796" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64093" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

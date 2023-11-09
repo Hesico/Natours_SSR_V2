@@ -46,11 +46,11 @@ if (userPasswordForm)
     e.preventDefault();
     document.querySelector('.btn--save-password').textContent = 'Updating...';
 
-    const passwordCurrent = document.getElementById('password-current').value;
-    const password = document.getElementById('password').value;
+    const password = document.getElementById('password-current').value;
+    const newPassword = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
     await updateSettings(
-      { passwordCurrent, password, passwordConfirm },
+      { password, newPassword, passwordConfirm },
       'password'
     );
 

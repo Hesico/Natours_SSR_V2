@@ -81,6 +81,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (_user.changedPasswordAfter(decoded.iat))
     return next(new AppError('User recently changed password!', 401));
 
+  res.locals.user = _user;
   req.user = _user;
   next();
 });
